@@ -115,20 +115,24 @@ namespace wServer.realm.entities
             Entity ret = null;
             float f = float.MaxValue;
             int l = int.MaxValue;
+            int lastFoundItem1 = 0; //store last found largest minimum quest value
             foreach (var i in Owner.Enemies)
             {
                 if (i.Value.ObjectDesc == null || !i.Value.ObjectDesc.Quest) continue;
-
+                
                 Tuple<int, int> x;
-                if (!QuestDat.TryGetValue(i.Value.ObjectDesc.ObjectId, out x)) continue;
+                if (!QuestDat.TryGetValue(i.Value.ObjectDesc.ObjectId, out x)) continue; //need to save lower end, to compare back to
 
-                if (Level >= x.Item1 && Level <= x.Item2)
+                if ((Level >= x.Item1 && Level <= x.Item2) && (x.Item1 >= lastFoundItem1)) //only look at quests as tough or tougher than previously found
                 {
-                    var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 500;
-                    if (d < f)
+                    //var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 500; //try to fix questmarker
+                    var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 5500;
+                    //if (d < f)
+                    if ((d < f) && (x.Item1 > lastFoundItem1))
                     {
                         f = d;
                         l = Math.Abs(i.Value.ObjectDesc.Level.Value - Level);
+                        lastFoundItem1 = x.Item1; //lower bound for quest.
                         ret = i.Value;
                     }
                 }
