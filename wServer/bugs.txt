@@ -1,5 +1,5 @@
 ﻿	no pause, see status effect 20
-	quest markers
+V	quest markers
 	no dungeons--keys vanish
 	some sounds glitch
 V	no /who support - easy to add

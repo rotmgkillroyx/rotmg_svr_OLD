@@ -43,65 +43,65 @@ namespace wServer.realm.entities
             return ret;
         }
 
-        static readonly Dictionary<string, Tuple<int, int>> QuestDat =
-            new Dictionary<string, Tuple<int, int>>()  //Level, Min, Max
+        static readonly Dictionary<string, Tuple<int, int, int>> QuestDat =
+            new Dictionary<string, Tuple<int, int, int>>()  //Priority, Min, Max
         {
-            { "Scorpion Queen",             Tuple.Create(1, 6) },
-            { "Bandit Leader",              Tuple.Create(1, 6) },
-            { "Hobbit Mage",                Tuple.Create(3, 8) },
-            { "Undead Hobbit Mage",         Tuple.Create(3, 8) },
-            { "Giant Crab",                 Tuple.Create(3, 8) },
-            { "Desert Werewolf",            Tuple.Create(3, 8) },
-            { "Sandsman King",              Tuple.Create(4, 9) },
-            { "Goblin Mage",                Tuple.Create(4, 9) },
-            { "Elf Wizard",                 Tuple.Create(4, 9) },
-            { "Dwarf King",                 Tuple.Create(5, 10) },
-            { "Swarm",                      Tuple.Create(6, 11) },
-            { "Shambling Sludge",           Tuple.Create(6, 11) },
-            { "Great Lizard",               Tuple.Create(7, 12) },
-            { "Wasp Queen",                 Tuple.Create(7, 20) },
-            { "Horned Drake",               Tuple.Create(7, 20) },
+            { "Scorpion Queen",             Tuple.Create(1, 1, 6) },
+            { "Bandit Leader",              Tuple.Create(1, 1, 6) },
+            { "Hobbit Mage",                Tuple.Create(3, 3, 8) },
+            { "Undead Hobbit Mage",         Tuple.Create(3, 3, 8) },
+            { "Giant Crab",                 Tuple.Create(3, 3, 8) },
+            { "Desert Werewolf",            Tuple.Create(3, 3, 8) },
+            { "Sandsman King",              Tuple.Create(4, 4, 9) },
+            { "Goblin Mage",                Tuple.Create(4, 4, 9) },
+            { "Elf Wizard",                 Tuple.Create(4, 4, 9) },
+            { "Dwarf King",                 Tuple.Create(5, 5, 10) },
+            { "Swarm",                      Tuple.Create(6, 6, 11) },
+            { "Shambling Sludge",           Tuple.Create(6, 6, 11) },
+            { "Great Lizard",               Tuple.Create(7, 7, 12) },
+            { "Wasp Queen",                 Tuple.Create(8, 7, 20) },
+            { "Horned Drake",               Tuple.Create(8, 7, 20) },
 
-            { "Deathmage",                  Tuple.Create(1, 11) },
-            { "Great Coil Snake",           Tuple.Create(6, 12) },
-            { "Lich",                       Tuple.Create(6, 20) },
-            { "Actual Lich",                Tuple.Create(7, 20) },
-            { "Ent Ancient",                Tuple.Create(7, 20) },
-            { "Actual Ent Ancient",         Tuple.Create(7, 20) },
-            { "Oasis Giant",                Tuple.Create(8, 20) },
-            { "Phoenix Lord",               Tuple.Create(9, 20) },
-            { "Ghost King",                 Tuple.Create(10, 20) },
-            { "Actual Ghost King",          Tuple.Create(10, 20) },
-            { "Cyclops God",                Tuple.Create(10, 20) },
-            { "Red Demon",                  Tuple.Create(15, 20) },
+            { "Deathmage",                  Tuple.Create(5, 6, 11) },
+            { "Great Coil Snake",           Tuple.Create(6, 6, 12) },
+            { "Lich",                       Tuple.Create(8, 6, 20) },
+            { "Actual Lich",                Tuple.Create(8, 7, 20) },
+            { "Ent Ancient",                Tuple.Create(9, 7, 20) },
+            { "Actual Ent Ancient",         Tuple.Create(9, 7, 20) },
+            { "Oasis Giant",                Tuple.Create(10, 8, 20) },
+            { "Phoenix Lord",               Tuple.Create(10, 9, 20) },
+            { "Ghost King",                 Tuple.Create(11,10, 20) },
+            { "Actual Ghost King",          Tuple.Create(11,10, 20) },
+            { "Cyclops God",                Tuple.Create(12,10, 20) },
+            { "Red Demon",                  Tuple.Create(14,15, 20) },
 
-            { "Skull Shrine",               Tuple.Create(15, 20) },
-            { "Pentaract",                  Tuple.Create(15, 20) },
-            { "Cube God",                   Tuple.Create(15, 20) },
-            { "Grand Sphinx",               Tuple.Create(15, 20) },
-            { "Lord of the Lost Lands",     Tuple.Create(15, 20) },
-            { "Hermit God",                 Tuple.Create(15, 20) },
-            { "Ghost Ship",                 Tuple.Create(15, 20) },
+            { "Skull Shrine",               Tuple.Create(13,15, 20) },
+            { "Pentaract",                  Tuple.Create(13,15, 20) },
+            { "Cube God",                   Tuple.Create(13,15, 20) },
+            { "Grand Sphinx",               Tuple.Create(13,15, 20) },
+            { "Lord of the Lost Lands",     Tuple.Create(13,15, 20) },
+            { "Hermit God",                 Tuple.Create(13,15, 20) },
+            { "Ghost Ship",                 Tuple.Create(13,15, 20) },
 
-            { "Evil Chicken God",           Tuple.Create(1, 20) },
-            { "Bonegrind The Butcher",      Tuple.Create(1, 20) },
-            { "Dreadstump the Pirate King", Tuple.Create(1, 20) },
-            { "Arachna the Spider Queen",   Tuple.Create(1, 20) },
-            { "Stheno the Snake Queen",     Tuple.Create(1, 20) },
-            { "Mixcoatl the Masked God",    Tuple.Create(1, 20) },
-            { "Limon the Sprite God",       Tuple.Create(1, 20) },
-            { "Septavius the Ghost God",    Tuple.Create(1, 20) },
-            { "Davy Jones",                 Tuple.Create(1, 20) },
-            { "Lord Ruthven",               Tuple.Create(1, 20) },
-            { "Archdemon Malphas",          Tuple.Create(1, 20) },
-            { "Thessal the Mermaid Goddess",Tuple.Create(1, 20) },
-            { "Dr. Terrible",               Tuple.Create(1, 20) },
-            { "Horrific Creation",          Tuple.Create(1, 20) },
-            { "Masked Party God",           Tuple.Create(1, 20) },
-            { "Stone Guardian Left",        Tuple.Create(1, 20) },
-            { "Stone Guardian Right",       Tuple.Create(1, 20) },
-            { "Oryx the Mad God 1",         Tuple.Create(1, 20) },
-            { "Oryx the Mad God 2",         Tuple.Create(1, 20) },
+            { "Evil Chicken God",           Tuple.Create(15,1, 20) },
+            { "Bonegrind The Butcher",      Tuple.Create(15,1, 20) },
+            { "Dreadstump the Pirate King", Tuple.Create(15,1, 20) },
+            { "Arachna the Spider Queen",   Tuple.Create(15,1, 20) },
+            { "Stheno the Snake Queen",     Tuple.Create(15,1, 20) },
+            { "Mixcoatl the Masked God",    Tuple.Create(15,1, 20) },
+            { "Limon the Sprite God",       Tuple.Create(15,1, 20) },
+            { "Septavius the Ghost God",    Tuple.Create(15,1, 20) },
+            { "Davy Jones",                 Tuple.Create(15,1, 20) },
+            { "Lord Ruthven",               Tuple.Create(15,1, 20) },
+            { "Archdemon Malphas",          Tuple.Create(15,1, 20) },
+            { "Thessal the Mermaid Goddess",Tuple.Create(15,1, 20) },
+            { "Dr. Terrible",               Tuple.Create(15,1, 20) },
+            { "Horrific Creation",          Tuple.Create(15,1, 20) },
+            { "Masked Party God",           Tuple.Create(15,1, 20) },
+            { "Stone Guardian Left",        Tuple.Create(15,1, 20) },
+            { "Stone Guardian Right",       Tuple.Create(15,1, 20) },
+            { "Oryx the Mad God 1",         Tuple.Create(15,1, 20) },
+            { "Oryx the Mad God 2",         Tuple.Create(15,1, 20) },
         };
 
         float Dist(Entity a, Entity b)
@@ -113,27 +113,30 @@ namespace wServer.realm.entities
         Entity FindQuest()
         {
             Entity ret = null;
-            float f = float.MaxValue;
+            float f = 0;
             int l = int.MaxValue;
-            int lastFoundItem1 = 0; //store last found largest minimum quest value
-            foreach (var i in Owner.Enemies)
+            //int lastFoundItem1 = 0; //store last found largest minimum quest value
+            foreach (var i in Owner.Quests.Values
+                .OrderBy(quest => DistanceSquared(quest.X, quest.Y, X, Y)))
             {
-                if (i.Value.ObjectDesc == null || !i.Value.ObjectDesc.Quest) continue;
-                
-                Tuple<int, int> x;
-                if (!QuestDat.TryGetValue(i.Value.ObjectDesc.ObjectId, out x)) continue; //need to save lower end, to compare back to
+                if (i.ObjectDesc == null || !i.ObjectDesc.Quest) continue;
 
-                if ((Level >= x.Item1 && Level <= x.Item2) && (x.Item1 >= lastFoundItem1)) //only look at quests as tough or tougher than previously found
+                Tuple<int, int, int> x;
+                if (!QuestDat.TryGetValue(i.ObjectDesc.ObjectId, out x)) continue; //need to save lower end, to compare back to
+
+                if ((Level >= x.Item2 && Level <= x.Item3))
+                //if ((Level >= x.Item2 && Level <= x.Item3) && (x.Item1 >= lastFoundItem1)) //only look at quests as tough or tougher than previously found
                 {
                     //var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 500; //try to fix questmarker
-                    var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 5500;
+                    //var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 5500;
                     //if (d < f)
-                    if ((d < f) && (x.Item1 > lastFoundItem1))
+                    var d = (20 - Math.Abs((i.ObjectDesc.Level ?? 0) - Level)) * x.Item1;
+                    if ((d > f))
                     {
                         f = d;
-                        l = Math.Abs(i.Value.ObjectDesc.Level.Value - Level);
-                        lastFoundItem1 = x.Item1; //lower bound for quest.
-                        ret = i.Value;
+                        l = Math.Abs(i.ObjectDesc.Level.Value - Level);
+                        //lastFoundItem1 = x.Item1; //lower bound for quest.
+                        ret = i;
                     }
                 }
             }
