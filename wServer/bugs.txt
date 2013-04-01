@@ -1,0 +1,15 @@
+﻿	no pause, see status effect 20
+	quest markers
+	no dungeons--keys vanish
+	some sounds glitch
+V	no /who support - easy to add
+	no /tell?
+	drake eggs don't spawn/drop
+	no Hermit God? :(
+	sphinx has 1 extra round of attacks? (Should shoot 8 waves of yellow, actually shoots 12?) rotmg_svr-master\wServer\logic\db\BehaviorDb.Sphinx.cs
+	Too much loot!! ( drops are a little too generous)
+	That odd def bug?? Stuff dies to 2 stuns??
+	levis are goofy/laggy
+	Constructs dont heal - this is a feature
+	night elves respawn fully with owner. Gets a little crazy.
+	fulmination scepter doesn't slow

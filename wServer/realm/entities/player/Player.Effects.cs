@@ -66,7 +66,7 @@ namespace wServer.realm.entities
         }
 
         int newbieTime = 0;
-        void SetNewbiePeriod()
+        internal void SetNewbiePeriod()
         {
             newbieTime = 3000;
         }

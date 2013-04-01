@@ -5,6 +5,7 @@ using System.Text;
 using wServer.cliPackets;
 using wServer.svrPackets;
 using wServer.realm.setpieces;
+using wServer.realm.entities.player.commands;
 
 namespace wServer.realm.entities
 {
@@ -30,6 +31,9 @@ namespace wServer.realm.entities
                 }, null);
         }
 
+
+        static Dictionary<string, ICommand> cmds;
+
         bool CmdReqAdmin()
         {
             if (!psr.Account.Admin)
@@ -48,190 +52,44 @@ namespace wServer.realm.entities
         }
         void ProcessCmd(string cmd, string[] args)
         {
-            if (cmd.Equals("tutorial", StringComparison.OrdinalIgnoreCase))
-                psr.Reconnect(new ReconnectPacket()
-                {
-                    Host = "",
-                    Port = 2050,
-                    GameId = World.TUT_ID,
-                    Name = "Tutorial",
-                    Key = Empty<byte>.Array,
-                });
-            else if (cmd.Equals("spawn", StringComparison.OrdinalIgnoreCase) &&
-                     CmdReqAdmin() && args.Length > 0)
+            if (cmds == null)
             {
-                string name = string.Join(" ", args);
-                short objType;
-                if (!XmlDatas.IdToType.TryGetValue(name, out objType) ||
-                    !XmlDatas.ObjectDescs.ContainsKey(objType))
-                    psr.SendPacket(new TextPacket()
+                cmds = new Dictionary<string, ICommand>();
+                var t = typeof(ICommand);
+                foreach (var i in t.Assembly.GetTypes())
+                    if (t.IsAssignableFrom(i) && i != t)
                     {
-                        BubbleTime = 0,
-                        Stars = -1,
-                        Name = "",
-                        Text = "Unknown entity!"
-                    });
-                else
-                {
-                    var entity = Entity.Resolve(objType);
-                    entity.Move(X, Y);
-                    Owner.EnterWorld(entity);
-                }
-            }
-            else if (cmd.Equals("spawnx", StringComparison.OrdinalIgnoreCase) &&
-                     CmdReqAdmin() && args.Length > 1)
-            {
-                string name = string.Join(" ", args.Skip(1).ToArray());
-                short objType;
-                if (!XmlDatas.IdToType.TryGetValue(name, out objType) ||
-                    !XmlDatas.ObjectDescs.ContainsKey(objType))
-                    psr.SendPacket(new TextPacket()
-                    {
-                        BubbleTime = 0,
-                        Stars = -1,
-                        Name = "",
-                        Text = "Unknown entity!"
-                    });
-                else
-                {
-                    int c = int.Parse(args[0]);
-                    for (int i = 0; i < c; i++)
-                    {
-                        var entity = Entity.Resolve(objType);
-                        entity.Move(X, Y);
-                        Owner.EnterWorld(entity);
-                    }
-                }
-            }
-            else if (cmd.Equals("addEff", StringComparison.OrdinalIgnoreCase) &&
-                     CmdReqAdmin() && args.Length == 1)
-            {
-                try
-                {
-                    ApplyConditionEffect(new ConditionEffect()
-                    {
-                        Effect = (ConditionEffectIndex)Enum.Parse(typeof(ConditionEffectIndex), args[0].Trim()),
-                        DurationMS = -1
-                    });
-                }
-                catch
-                {
-                    psr.SendPacket(new TextPacket()
-                    {
-                        BubbleTime = 0,
-                        Stars = -1,
-                        Name = "",
-                        Text = "Invalid effect!"
-                    });
-                }
-            }
-            else if (cmd.Equals("removeEff", StringComparison.OrdinalIgnoreCase) &&
-                     CmdReqAdmin() && args.Length == 1)
-            {
-                try
-                {
-                    ApplyConditionEffect(new ConditionEffect()
-                    {
-                        Effect = (ConditionEffectIndex)Enum.Parse(typeof(ConditionEffectIndex), args[0].Trim()),
-                        DurationMS = 0
-                    });
-                }
-                catch
-                {
-                    psr.SendPacket(new TextPacket()
-                    {
-                        BubbleTime = 0,
-                        Stars = -1,
-                        Name = "",
-                        Text = "Invalid effect!"
-                    });
-                }
-            }
-            else if (cmd.Equals("gimme", StringComparison.OrdinalIgnoreCase) &&
-                     CmdReqAdmin() && args.Length >= 1)
-            {
-                string name = string.Join(" ", args.ToArray()).Trim();
-                short objType;
-                if (!XmlDatas.IdToType.TryGetValue(name, out objType))
-                {
-                    psr.SendPacket(new TextPacket()
-                    {
-                        BubbleTime = 0,
-                        Stars = -1,
-                        Name = "",
-                        Text = "Unknown type!"
-                    });
-                    return;
-                }
-                for (int i = 0; i < Inventory.Length; i++)
-                    if (Inventory[i] == null)
-                    {
-                        Inventory[i] = XmlDatas.ItemDescs[objType];
-                        UpdateCount++;
-                        return;
+                        var instance = (ICommand)Activator.CreateInstance(i);
+                        cmds.Add(instance.Command, instance);
                     }
             }
-            else if (cmd.Equals("tp", StringComparison.OrdinalIgnoreCase) &&
-                     CmdReqAdmin() && args.Length >= 2)
+
+            ICommand command;
+            if (!cmds.TryGetValue(cmd, out command))
             {
-                int x, y;
-                try
-                {
-                    x = int.Parse(args[0]);
-                    y = int.Parse(args[1]);
-                }
-                catch
-                {
-                    psr.SendPacket(new TextPacket()
+                psr.SendPacket(new TextPacket()
                     {
                         BubbleTime = 0,
                         Stars = -1,
-                        Name = "",
-                        Text = "Invalid coordinates!"
+                        Name = "*Error*",
+                        Text = "Unknown Command!"
                     });
-                    return;
-                }
-                Move(x + 0.5f, y + 0.5f);
-                SetNewbiePeriod();
-                UpdateCount++;
-                Owner.BroadcastPacket(new GotoPacket()
-                {
-                    ObjectId = Id,
-                    Position = new Position()
-                    {
-                        X = X,
-                        Y = Y
-                    }
-                }, null);
+                return;
             }
-            else if (cmd.Equals("setpiece", StringComparison.OrdinalIgnoreCase) &&
-                     CmdReqAdmin() && args.Length == 1)
+            try
             {
-                try
-                {
-                    ISetPiece piece = (ISetPiece)Activator.CreateInstance(Type.GetType(
-                        "wServer.realm.setpieces." + args[0]));
-                    piece.RenderSetPiece(Owner, new IntPoint((int)X + 1, (int)Y + 1));
-                }
-                catch
-                {
-                    psr.SendPacket(new TextPacket()
-                    {
-                        BubbleTime = 0,
-                        Stars = -1,
-                        Name = "",
-                        Text = "Cannot apply setpiece!"
-                    });
-                }
+                command.Execute(this, args);
             }
-            else
+            catch
+            {
                 psr.SendPacket(new TextPacket()
                 {
                     BubbleTime = 0,
                     Stars = -1,
-                    Name = "",
-                    Text = "Unknown command!"
+                    Name = "*Error*",
+                    Text = "Error when executing the command!"
                 });
+            }
         }
     }
 }
