@@ -12,4 +12,4 @@ V	no /who support - easy to add
 	levis are goofy/laggy
 	Constructs dont heal - this is a feature
 	night elves respawn fully with owner. Gets a little crazy.
-	fulmination scepter doesn't slow
+V	fulmination scepter doesn't slow 

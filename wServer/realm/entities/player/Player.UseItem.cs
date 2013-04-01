@@ -583,6 +583,12 @@ namespace wServer.realm.entities
                                 if (targets[i] == null) break;
                                 Entity prev = i == 0 ? (Entity)this : targets[i - 1];
                                 targets[i].Damage(this, time, eff.TotalDamage, false);
+                                if (eff.ConditionEffect != null)
+                                    targets[i].ApplyConditionEffect(new ConditionEffect()
+                                    {
+                                        Effect = eff.ConditionEffect.Value,
+                                        DurationMS = (int)(eff.EffectDuration * 1000)
+                                    });
                                 pkts.Add(new ShowEffectPacket()
                                 {
                                     EffectType = EffectType.Lightning,
