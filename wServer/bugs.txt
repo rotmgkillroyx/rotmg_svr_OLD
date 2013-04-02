@@ -1,4 +1,4 @@
-﻿	no pause, see status effect 20
+﻿V	no pause, see status effect 20
 V	quest markers
 	no dungeons--keys vanish
 	some sounds glitch
