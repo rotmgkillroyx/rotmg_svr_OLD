@@ -113,29 +113,22 @@ namespace wServer.realm.entities
         Entity FindQuest()
         {
             Entity ret = null;
-            float f = 0;
-            int l = int.MaxValue;
-            //int lastFoundItem1 = 0; //store last found largest minimum quest value
+            float bestScore = 0;
             foreach (var i in Owner.Quests.Values
                 .OrderBy(quest => DistanceSquared(quest.X, quest.Y, X, Y)))
             {
                 if (i.ObjectDesc == null || !i.ObjectDesc.Quest) continue;
 
                 Tuple<int, int, int> x;
-                if (!QuestDat.TryGetValue(i.ObjectDesc.ObjectId, out x)) continue; //need to save lower end, to compare back to
+                if (!QuestDat.TryGetValue(i.ObjectDesc.ObjectId, out x)) continue;
 
                 if ((Level >= x.Item2 && Level <= x.Item3))
-                //if ((Level >= x.Item2 && Level <= x.Item3) && (x.Item1 >= lastFoundItem1)) //only look at quests as tough or tougher than previously found
                 {
-                    //var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 500; //try to fix questmarker
-                    //var d = Dist(i.Value, this) + Math.Abs(i.Value.ObjectDesc.Level ?? 0 - Level) * 5500;
-                    //if (d < f)
-                    var d = (20 - Math.Abs((i.ObjectDesc.Level ?? 0) - Level)) * x.Item1;
-                    if ((d > f))
+                    var score = (20 - Math.Abs((i.ObjectDesc.Level ?? 0) - Level)) * x.Item1 -   //priority * level diff
+                            Dist(this, i) / 100;    //minus 1 for every 100 tile distance
+                    if (score > bestScore)
                     {
-                        f = d;
-                        l = Math.Abs(i.ObjectDesc.Level.Value - Level);
-                        //lastFoundItem1 = x.Item1; //lower bound for quest.
+                        bestScore = score;
                         ret = i;
                     }
                 }
