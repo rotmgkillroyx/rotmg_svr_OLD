@@ -43,6 +43,9 @@ namespace terrain
         Hallway_2,
         Hallway_3,
         Enemy,
+        Setpiece1,
+        Setpiece2,
+        Setpiece3
     }
     struct TerrainTile : IEquatable<TerrainTile>
     {

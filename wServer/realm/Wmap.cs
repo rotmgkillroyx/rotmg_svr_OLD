@@ -55,6 +55,7 @@ namespace wServer.realm
         public short ObjType;
         public WmapTerrain Terrain;
         public TileRegion Region;
+        public byte Elevation;
         public int ObjId;
 
         public ObjectDef ToDef(int x, int y)
@@ -129,53 +130,110 @@ namespace wServer.realm
         Tuple<IntPoint, short, string>[] entities;
         public int Load(Stream stream, int idBase)
         {
-            List<WmapTile> dict = new List<WmapTile>();
+            int ver = stream.ReadByte();
             using (BinaryReader rdr = new BinaryReader(new ZlibStream(stream, CompressionMode.Decompress)))
             {
-                short c = rdr.ReadInt16();
-                for (short i = 0; i < c; i++)
-                {
-                    WmapTile tile = new WmapTile();
-                    tile.TileId = (byte)rdr.ReadInt16();
-                    string obj = rdr.ReadString();
-                    tile.ObjType = string.IsNullOrEmpty(obj) ? (short)0 : XmlDatas.IdToType[obj];
-                    tile.Name = rdr.ReadString();
-                    tile.Terrain = (WmapTerrain)rdr.ReadByte();
-                    tile.Region = (TileRegion)rdr.ReadByte();
-                    dict.Add(tile);
-                }
-                Width = rdr.ReadInt32();
-                Height = rdr.ReadInt32();
-                tiles = new WmapTile[Width, Height];
-                int enCount = 0;
-                List<Tuple<IntPoint, short, string>> entities = new List<Tuple<IntPoint, short, string>>();
-                for (int y = 0; y < Height; y++)
-                    for (int x = 0; x < Width; x++)
-                    {
-                        WmapTile tile = dict[rdr.ReadInt16()];
-                        tile.UpdateCount = 1;
-
-                        ObjectDesc desc;
-                        if (tile.ObjType != 0 &&
-                            (!XmlDatas.ObjectDescs.TryGetValue(tile.ObjType, out desc) ||
-                            !desc.Static || desc.Enemy))
-                        {
-                            entities.Add(new Tuple<IntPoint, short, string>(new IntPoint(x, y), tile.ObjType, tile.Name));
-                            tile.ObjType = 0;
-                        }
-
-                        if (tile.ObjType != 0)
-                        {
-                            enCount++;
-                            tile.ObjId = idBase + enCount;
-                        }
-
-
-                        tiles[x, y] = tile;
-                    }
-                this.entities = entities.ToArray();
-                return enCount;
+                if (ver == 0) return LoadV0(rdr, idBase);
+                else if (ver == 1) return LoadV1(rdr, idBase);
+                else throw new NotSupportedException("WMap version " + ver);
             }
+        }
+
+        int LoadV0(BinaryReader reader, int idBase)
+        {
+            List<WmapTile> dict = new List<WmapTile>();
+            short c = reader.ReadInt16();
+            for (short i = 0; i < c; i++)
+            {
+                WmapTile tile = new WmapTile();
+                tile.TileId = (byte)reader.ReadInt16();
+                string obj = reader.ReadString();
+                tile.ObjType = string.IsNullOrEmpty(obj) ? (short)0 : XmlDatas.IdToType[obj];
+                tile.Name = reader.ReadString();
+                tile.Terrain = (WmapTerrain)reader.ReadByte();
+                tile.Region = (TileRegion)reader.ReadByte();
+                dict.Add(tile);
+            }
+            Width = reader.ReadInt32();
+            Height = reader.ReadInt32();
+            tiles = new WmapTile[Width, Height];
+            int enCount = 0;
+            List<Tuple<IntPoint, short, string>> entities = new List<Tuple<IntPoint, short, string>>();
+            for (int y = 0; y < Height; y++)
+                for (int x = 0; x < Width; x++)
+                {
+                    WmapTile tile = dict[reader.ReadInt16()];
+                    tile.UpdateCount = 1;
+
+                    ObjectDesc desc;
+                    if (tile.ObjType != 0 &&
+                        (!XmlDatas.ObjectDescs.TryGetValue(tile.ObjType, out desc) ||
+                        !desc.Static || desc.Enemy))
+                    {
+                        entities.Add(new Tuple<IntPoint, short, string>(new IntPoint(x, y), tile.ObjType, tile.Name));
+                        tile.ObjType = 0;
+                    }
+
+                    if (tile.ObjType != 0)
+                    {
+                        enCount++;
+                        tile.ObjId = idBase + enCount;
+                    }
+
+
+                    tiles[x, y] = tile;
+                }
+            this.entities = entities.ToArray();
+            return enCount;
+        }
+
+        int LoadV1(BinaryReader reader, int idBase)
+        {
+            List<WmapTile> dict = new List<WmapTile>();
+            short c = reader.ReadInt16();
+            for (short i = 0; i < c; i++)
+            {
+                WmapTile tile = new WmapTile();
+                tile.TileId = (byte)reader.ReadInt16();
+                string obj = reader.ReadString();
+                tile.ObjType = string.IsNullOrEmpty(obj) ? (short)0 : XmlDatas.IdToType[obj];
+                tile.Name = reader.ReadString();
+                tile.Terrain = (WmapTerrain)reader.ReadByte();
+                tile.Region = (TileRegion)reader.ReadByte();
+                tile.Elevation = reader.ReadByte();
+                dict.Add(tile);
+            }
+            Width = reader.ReadInt32();
+            Height = reader.ReadInt32();
+            tiles = new WmapTile[Width, Height];
+            int enCount = 0;
+            List<Tuple<IntPoint, short, string>> entities = new List<Tuple<IntPoint, short, string>>();
+            for (int y = 0; y < Height; y++)
+                for (int x = 0; x < Width; x++)
+                {
+                    WmapTile tile = dict[reader.ReadInt16()];
+                    tile.UpdateCount = 1;
+
+                    ObjectDesc desc;
+                    if (tile.ObjType != 0 &&
+                        (!XmlDatas.ObjectDescs.TryGetValue(tile.ObjType, out desc) ||
+                        !desc.Static || desc.Enemy))
+                    {
+                        entities.Add(new Tuple<IntPoint, short, string>(new IntPoint(x, y), tile.ObjType, tile.Name));
+                        tile.ObjType = 0;
+                    }
+
+                    if (tile.ObjType != 0)
+                    {
+                        enCount++;
+                        tile.ObjId = idBase + enCount;
+                    }
+
+
+                    tiles[x, y] = tile;
+                }
+            this.entities = entities.ToArray();
+            return enCount;
         }
 
         public IEnumerable<Entity> InstantiateEntities()

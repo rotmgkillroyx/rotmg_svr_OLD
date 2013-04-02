@@ -58,7 +58,7 @@ namespace terrain
                 }
                 ret.Add(nodes.ToArray());
                 c++;
-            } while (c < 20);
+            } while (c < 10);
             return ret;
         }
 
@@ -70,9 +70,9 @@ namespace terrain
                 .OrderBy(_ => _).ToArray();
             double[] roadHeights = new double[]
             {
-                heights[heights.Length * 1 / 4],
-                heights[heights.Length * 2 / 4],
-                heights[heights.Length * 3 / 4],
+                heights[heights.Length * 1 / 10],
+                heights[heights.Length * 3 / 10],
+                heights[heights.Length * 5 / 10],
                 1
             };
             Dictionary<MapPolygon, int> centerContour = new Dictionary<MapPolygon, int>();

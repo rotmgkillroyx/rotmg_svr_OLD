@@ -47,12 +47,17 @@ namespace terrain
                     wtr.Write(i.Name ?? "");
                     wtr.Write((byte)i.Terrain);
                     wtr.Write((byte)i.Region);
+                    wtr.Write((byte)(i.Elevation * 256));
                 }
                 wtr.Write(w);
                 wtr.Write(h);
                 wtr.Write(dat);
             }
-            return ZlibStream.CompressBuffer(ms.ToArray());
+            byte[] buff = ZlibStream.CompressBuffer(ms.ToArray());
+            byte[] ret = new byte[buff.Length + 1];
+            Buffer.BlockCopy(buff, 0, ret, 1, buff.Length);
+            ret[0] = 1;
+            return ret;
         }
     }
 }

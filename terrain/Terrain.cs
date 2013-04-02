@@ -136,7 +136,7 @@ namespace terrain
                 for (int x = 0; x < h; x++)
                 {
                     uint color = 0x00ffffff;
-                    color |= (uint)(tiles[x, y].Elevation * 255) << 24;
+                    color |= (uint)(tiles[x, y].Elevation * 256) << 24;
                     buff[x, y] = color;
                 }
             buff.Unlock();
@@ -166,18 +166,19 @@ namespace terrain
             while (true)
             {
                 int seed = Environment.TickCount;
-                //seed = 15465515;
-                seed = 21409625;
+                //seed = 21409625;
+                seed = 14727484;
                 Random rand = new Random(seed);
                 PolygonMap map = new PolygonMap(rand.Next());
-                map.Generate(Size * 6);
+                map.Generate(Size * 15);
 
                 var dat = CreateTerrain(rand.Next(), map);
                 new Biome(rand.Next(), map).ComputeBiomes(dat);
-                Test.Show(RenderColorBmp(dat));
-                Test.Show(RenderTerrainBmp(dat));
-                Test.Show(RenderMoistBmp(dat));
-                Test.Show(RenderEvalBmp(dat));
+                new TerrainDisplay(dat).ShowDialog();
+                //Test.Show(RenderColorBmp(dat));
+                //Test.Show(RenderTerrainBmp(dat));
+                //Test.Show(RenderMoistBmp(dat));
+                //Test.Show(RenderEvalBmp(dat));
 
                 map = null;
                 dat = null;
@@ -219,8 +220,8 @@ namespace terrain
                         TileObj = null
                     });
             }
-            //Render roads
             MapFeatures fea = new MapFeatures(map, seed);
+            //Render roads
             var roads = fea.GenerateRoads();
             foreach (var i in roads)
             {
@@ -244,14 +245,14 @@ namespace terrain
                     Elevation = (float)poly.DistanceToCoast,
                     TileObj = null
                 };
-                if (poly.IsOcean && !poly.IsCoast || poly.Neighbour.All(_ => _.IsWater))
+                if (poly.IsCoast)
                 {
-                    tile.TileId = TileTypes.DeepWater;
+                    tile.TileId = TileTypes.MovingWater;
                     tile.Moisture = 0;
                 }
                 else
                 {
-                    tile.TileId = TileTypes.MovingWater;
+                    tile.TileId = TileTypes.DeepWater;
                     tile.Moisture = 1;
                 }
                 rasterizer.FillPolygon(
@@ -281,7 +282,9 @@ namespace terrain
             foreach (var i in edges)
             {
                 i.Key.Item1.IsWater = true;
+                i.Key.Item1.RiverValue = i.Value + 1;
                 i.Key.Item2.IsWater = true;
+                i.Key.Item2.RiverValue = i.Value + 1;
                 rasterizer.DrawLineBresenham(
                     (i.Key.Item1.X + 1) / 2 * Size, (i.Key.Item1.Y + 1) / 2 * Size,
                     (i.Key.Item2.X + 1) / 2 * Size, (i.Key.Item2.Y + 1) / 2 * Size,

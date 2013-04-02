@@ -23,6 +23,7 @@ namespace terrain
         public MapEdge[] Edges { get; set; }
         public bool IsWater { get; set; }
         public bool IsOcean { get; set; }
+        public int? RiverValue { get; set; }
         public double? DistanceToCoast { get; set; }
     }
     class MapPolygon
@@ -90,9 +91,9 @@ namespace terrain
                 foreach (var j in i.Nodes)
                 {
                     //var n = noise[(int)((j.X + 1) / 2 * 255), (int)((j.Y + 1) / 2 * 255)];
-                    var n = noise.GetNoise((j.X + 1) * 2, (j.Y + 1) * 2, 0.3);
+                    var n = noise.GetNoise((j.X + 1) * 2, (j.Y + 1) * 2, 0);
                     var d = j.X * j.X + j.Y * j.Y;
-                    if (n < d * 0.65 ||
+                    if (n < d * 0.7 ||
                         (Math.Abs(j.X) > 0.9 || Math.Abs(j.Y) > 0.9))
                     {
                         j.IsWater = true;
@@ -217,10 +218,20 @@ namespace terrain
                         q.Enqueue(i);
                     }
             } while (q.Count > 0);
+
             foreach (var i in lake)
+            {
+                foreach (var j in i.Nodes) j.RiverValue = 1;
                 i.IsOcean = false;
+                if (i.Neighbour.Any(_ => !_.IsWater))
+                    coast.Add(i);
+            }
+
             foreach (var i in coast)
                 i.IsCoast = true;
+            foreach (var i in coast)
+                foreach (var j in i.Neighbour.Where(n => n.IsWater))
+                    j.IsCoast = true;
         }
         void ComputeDistances()
         {
