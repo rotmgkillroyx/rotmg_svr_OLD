@@ -35,31 +35,28 @@ namespace wServer
             SendKey = new RC4(new byte[] { 0x72, 0xc5, 0x58, 0x3c, 0xaf, 0xb6, 0x81, 0x89, 0x95, 0xcb, 0xd7, 0x4b, 0x80 });
         }
 
+        NetworkHandler handler;
         public void BeginProcess()
         {
-            wkrThread = new Thread(Process);
-            wkrThread.Start();
+            handler = new NetworkHandler(this, skt);
+            handler.BeginHandling();
         }
 
-        Queue<Packet> pending = new Queue<Packet>();        //TODO: thread safety
-        AutoResetEvent sendLock = new AutoResetEvent(false);
         public void SendPacket(Packet pkt)
         {
-            pending.Enqueue(pkt);
-            sendLock.Set();
+            handler.SendPacket(pkt);
         }
         public void SendPackets(IEnumerable<Packet> pkts)
         {
-            foreach (var i in pkts)
-                pending.Enqueue(i);
-            sendLock.Set();
+            handler.SendPackets(pkts);
         }
 
-        void ReceivePacket(Packet pkt)
+        internal bool ProcessPacket(Packet pkt)
         {
-            if (stage == ProtocalStage.Disconnected) return;
-            if (stage == ProtocalStage.Ready && (entity == null || entity != null && entity.Owner == null)) return;
-            Packet.BeginReadPacket(skt, this, ReceivePacket, Disconnect);
+            if (stage == ProtocalStage.Disconnected)
+                return false;
+            if (stage == ProtocalStage.Ready && (entity == null || entity != null && entity.Owner == null))
+                return false;
             try
             {
                 if (pkt.ID == PacketID.Hello)
@@ -71,55 +68,55 @@ namespace wServer
                 else if (pkt.ID == PacketID.Pong)
                     entity.Pong(pkt as PongPacket);
                 else if (pkt.ID == PacketID.Move)
-                    RealmManager.AddPendingAction(t => entity.Move(t, pkt as MovePacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.Move(t, pkt as MovePacket));
                 else if (pkt.ID == PacketID.PlayerShoot)
-                    RealmManager.AddPendingAction(t => entity.PlayerShoot(t, pkt as PlayerShootPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.PlayerShoot(t, pkt as PlayerShootPacket));
                 else if (pkt.ID == PacketID.EnemyHit)
-                    RealmManager.AddPendingAction(t => entity.EnemyHit(t, pkt as EnemyHitPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.EnemyHit(t, pkt as EnemyHitPacket));
                 else if (pkt.ID == PacketID.OtherHit)
-                    RealmManager.AddPendingAction(t => entity.OtherHit(t, pkt as OtherHitPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.OtherHit(t, pkt as OtherHitPacket));
                 else if (pkt.ID == PacketID.SquareHit)
-                    RealmManager.AddPendingAction(t => entity.SquareHit(t, pkt as SquareHitPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.SquareHit(t, pkt as SquareHitPacket));
                 else if (pkt.ID == PacketID.PlayerHit)
-                    RealmManager.AddPendingAction(t => entity.PlayerHit(t, pkt as PlayerHitPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.PlayerHit(t, pkt as PlayerHitPacket));
                 else if (pkt.ID == PacketID.ShootAck)
-                    RealmManager.AddPendingAction(t => entity.ShootAck(t, pkt as ShootAckPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.ShootAck(t, pkt as ShootAckPacket));
                 else if (pkt.ID == PacketID.InvSwap)
-                    RealmManager.AddPendingAction(t => entity.InventorySwap(t, pkt as InvSwapPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.InventorySwap(t, pkt as InvSwapPacket));
                 else if (pkt.ID == PacketID.InvDrop)
-                    RealmManager.AddPendingAction(t => entity.InventoryDrop(t, pkt as InvDropPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.InventoryDrop(t, pkt as InvDropPacket));
                 else if (pkt.ID == PacketID.UseItem)
-                    RealmManager.AddPendingAction(t => entity.UseItem(t, pkt as UseItemPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.UseItem(t, pkt as UseItemPacket));
                 else if (pkt.ID == PacketID.UsePortal)
-                    RealmManager.AddPendingAction(t => entity.UsePortal(t, pkt as UsePortalPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.UsePortal(t, pkt as UsePortalPacket));
                 else if (pkt.ID == PacketID.PlayerText)
-                    RealmManager.AddPendingAction(t => entity.PlayerText(t, pkt as PlayerTextPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.PlayerText(t, pkt as PlayerTextPacket));
                 else if (pkt.ID == PacketID.ChooseName)
-                    RealmManager.AddPendingAction(t => ProcessChooseNamePacket(pkt as ChooseNamePacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => ProcessChooseNamePacket(pkt as ChooseNamePacket));
                 else if (pkt.ID == PacketID.Escape)
-                    RealmManager.AddPendingAction(t => ProcessEscapePacket(pkt as EscapePacket), PendingPriority.Emergent);
+                    ProcessEscapePacket(pkt as EscapePacket);
                 else if (pkt.ID == PacketID.Teleport)
-                    RealmManager.AddPendingAction(t => entity.Teleport(t, pkt as TeleportPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.Teleport(t, pkt as TeleportPacket));
                 else if (pkt.ID == PacketID.GotoAck)
-                    RealmManager.AddPendingAction(t => entity.GotoAck(t, pkt as GotoAckPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.GotoAck(t, pkt as GotoAckPacket));
                 else if (pkt.ID == PacketID.EditAccountList)
-                    RealmManager.AddPendingAction(t => entity.EditAccountList(t, pkt as EditAccountListPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.EditAccountList(t, pkt as EditAccountListPacket));
                 else if (pkt.ID == PacketID.Buy)
-                    RealmManager.AddPendingAction(t => entity.Buy(t, pkt as BuyPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.Buy(t, pkt as BuyPacket));
                 else if (pkt.ID == PacketID.RequestTrade)
-                    RealmManager.AddPendingAction(t => entity.RequestTrade(t, pkt as RequestTradePacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.RequestTrade(t, pkt as RequestTradePacket));
                 else if (pkt.ID == PacketID.ChangeTrade)
-                    RealmManager.AddPendingAction(t => entity.ChangeTrade(t, pkt as ChangeTradePacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.ChangeTrade(t, pkt as ChangeTradePacket));
                 else if (pkt.ID == PacketID.AcceptTrade)
-                    RealmManager.AddPendingAction(t => entity.AcceptTrade(t, pkt as AcceptTradePacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.AcceptTrade(t, pkt as AcceptTradePacket));
                 else if (pkt.ID == PacketID.CancelTrade)
-                    RealmManager.AddPendingAction(t => entity.CancelTrade(t, pkt as CancelTradePacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.CancelTrade(t, pkt as CancelTradePacket));
                 else if (pkt.ID == PacketID.AOEAck)
-                    RealmManager.AddPendingAction(t => entity.AOEAck(t, pkt as AOEAckPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.AOEAck(t, pkt as AOEAckPacket));
                 else if (pkt.ID == PacketID.GroundDamage)
-                    RealmManager.AddPendingAction(t => entity.GroundDamage(t, pkt as GroundDamagePacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.GroundDamage(t, pkt as GroundDamagePacket));
                 else if (pkt.ID == PacketID.CheckCredits)
-                    RealmManager.AddPendingAction(t => entity.CheckCredits(t, pkt as CheckCreditsPacket), PendingPriority.Networking);
+                    RealmManager.Network.AddPendingAction(this, t => entity.CheckCredits(t, pkt as CheckCreditsPacket));
                 else if (pkt.ID != PacketID.Packet)
                 {
                     Console.WriteLine("Unhandled packet: " + pkt.ToString());
@@ -127,8 +124,9 @@ namespace wServer
             }
             catch
             {
-                Disconnect();
+                return false;
             }
+            return true;
         }
 
         public void Disconnect()
@@ -144,7 +142,6 @@ namespace wServer
                 db = null;
             }
             skt.Close();
-            sendLock.Set();
         }
         public void Save()
         {
@@ -157,32 +154,6 @@ namespace wServer
                 }
                 db.Dispose();
                 db = null;
-            }
-        }
-
-        void Process()
-        {
-            try
-            {
-                stage = ProtocalStage.Connected;
-                Packet.BeginReadPacket(skt, this, ReceivePacket, Disconnect);
-                NWriter wtr = new NWriter(new NetworkStream(skt));
-                while (sendLock.WaitOne())
-                {
-                    if (stage == ProtocalStage.Disconnected) break;
-                    while (pending.Count > 0)
-                    {
-                        Packet pkt = pending.Dequeue();
-                        //if (pkt.ID != PacketID.New_Tick &&
-                        //    pkt.ID != PacketID.Ping)
-                        //    Console.WriteLine(pkt.ID);
-                        Packet.WritePacket(wtr, pkt, this);
-                    }
-                }
-            }
-            catch
-            {
-                Disconnect();
             }
         }
 
@@ -417,9 +388,10 @@ namespace wServer
             });
         }
 
+        //Following must execute, network loop will discard disconnected client, so logic loop
         void DisconnectFromRealm()
         {
-            RealmManager.AddPendingAction(t =>
+            RealmManager.Logic.AddPendingAction(t =>
             {
                 if (Player != null)
                     Player.SaveToCharacter();
@@ -429,7 +401,7 @@ namespace wServer
         }
         public void Reconnect(ReconnectPacket pkt)
         {
-            RealmManager.AddPendingAction(t =>
+            RealmManager.Logic.AddPendingAction(t =>
             {
                 if (Player != null)
                     Player.SaveToCharacter();

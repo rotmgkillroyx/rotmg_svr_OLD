@@ -16,7 +16,7 @@ namespace wServer.realm.entities
                 obj.Buy(this);
         }
 
-        public void CheckCredits(RealmTime time, CheckCreditsPacket pkt)
+        public void CheckCredits(RealmTime t, CheckCreditsPacket pkt)
         {
             psr.Database.ReadStats(psr.Account);
             Credits = psr.Account.Credits;

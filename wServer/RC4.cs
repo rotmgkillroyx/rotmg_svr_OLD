@@ -60,7 +60,7 @@ namespace wServer
             }
         }
 
-        public byte[] Crypt(byte[] buf)
+        public byte[] Crypt(byte[] buf, int len)
         {
             int xorIndex;
             byte tmp;
@@ -70,9 +70,9 @@ namespace wServer
                 return null;
             }
 
-            byte[] result = new byte[buf.Length];
+            byte[] result = new byte[len];
 
-            for (int i = 0; i < buf.Length; i++)
+            for (int i = 0; i < len; i++)
             {
 
                 this.X = (this.X + 1) & 0xff;

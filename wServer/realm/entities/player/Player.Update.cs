@@ -155,8 +155,8 @@ namespace wServer.realm.entities
             SendNewTick(time);
         }
 
-        const int TICK_PER_SECOND = 30;
-        int tickPassed = RealmManager.TPS / TICK_PER_SECOND;
+        const int TICK_PER_SECOND = 20;
+        int tickPassed = LogicTicker.TPS / TICK_PER_SECOND;
         int timePassed = 0;
         int tickId = 0;
         long tickIdTime = 0;
@@ -170,7 +170,7 @@ namespace wServer.realm.entities
             }
             else
             {
-                tickPassed = RealmManager.TPS / TICK_PER_SECOND;
+                tickPassed = LogicTicker.TPS / TICK_PER_SECOND;
                 tickIdTime = time.tickTimes;
             }
 

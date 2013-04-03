@@ -26,56 +26,24 @@ namespace wServer
         public abstract PacketID ID { get; }
         public abstract Packet CreateInstance();
 
-        public abstract byte[] Crypt(ClientProcessor psr, byte[] dat);
+        public abstract byte[] Crypt(ClientProcessor psr, byte[] dat, int len);
 
-
-        public static void BeginReadPacket(Socket skt, ClientProcessor psr, Action<Packet> callback, Action failure)
+        public void Read(ClientProcessor psr, byte[] body, int len)
         {
-            byte[] n = new byte[5];
-            skt.BeginReceive(n, 0, 5, 0, ar =>
-            {
-                try
-                {
-                    byte[] x = (byte[])ar.AsyncState;
-                    int len = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(x, 0));
-                    if (len == 0)
-                    {
-                        failure();
-                        return;
-                    }
-                    len -= 5;
-                    byte id = x[4];
-                    Packet packet = Packets[(PacketID)id].CreateInstance();
-                    byte[] content = new byte[len];
-                    if (len > 0)
-                        skt.Receive(content);
-                    packet.Read(psr, new NReader(new MemoryStream(packet.Crypt(psr, content))));
-                    callback(packet);
-                }
-                catch { failure(); }
-            }, n);
+            Read(psr, new NReader(new MemoryStream(Crypt(psr, body, len))));
         }
-        public static Packet ReadPacket(NReader rdr, ClientProcessor psr)
-        {
-            int len = rdr.ReadInt32() - 5;
-            byte id = rdr.ReadByte();
-            Packet packet = Packets[(PacketID)id].CreateInstance();
-            byte[] content = rdr.ReadBytes(len);
-            packet.Read(psr, new NReader(new MemoryStream(packet.Crypt(psr, content))));
-            return packet;
-        }
-
-
-        public static void WritePacket(NWriter wtr, Packet pkt, ClientProcessor psr)
+        public byte[] Write(ClientProcessor psr)
         {
             MemoryStream s = new MemoryStream();
-            pkt.Write(psr, new NWriter(s));
+            this.Write(psr, new NWriter(s));
 
             byte[] content = s.ToArray();
-            content = pkt.Crypt(psr, content);
-            wtr.Write(content.Length + 5);
-            wtr.Write((byte)pkt.ID);
-            wtr.Write(content);
+            byte[] ret = new byte[5 + content.Length];
+            content = this.Crypt(psr, content, content.Length);
+            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(ret.Length)), 0, ret, 0, 4);
+            ret[4] = (byte)this.ID;
+            Buffer.BlockCopy(content, 0, ret, 5, content.Length);
+            return ret;
         }
 
         protected abstract void Read(ClientProcessor psr, NReader rdr);
@@ -99,7 +67,7 @@ namespace wServer
     {
         public override PacketID ID { get { return PacketID.Packet; } }
         public override Packet CreateInstance() { return new NopPacket(); }
-        public override byte[] Crypt(ClientProcessor psr, byte[] dat) { return dat; }
+        public override byte[] Crypt(ClientProcessor psr, byte[] dat, int len) { return dat; }
         protected override void Read(ClientProcessor psr, NReader rdr) { }
         protected override void Write(ClientProcessor psr, NWriter wtr) { }
     }

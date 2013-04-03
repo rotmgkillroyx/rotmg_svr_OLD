@@ -190,7 +190,7 @@ namespace wServer.realm.entities
 
                 tmr.Reset();
 
-                RealmManager.AddPendingAction(_ => w.Timers.Add(tmr), PendingPriority.Creation);
+                RealmManager.Logic.AddPendingAction(_ => w.Timers.Add(tmr), PendingPriority.Creation);
             });
             Owner.Timers.Add(tmr);
         }

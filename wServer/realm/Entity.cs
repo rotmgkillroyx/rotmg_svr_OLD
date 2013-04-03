@@ -143,7 +143,7 @@ namespace wServer.realm
         public Position? TryGetHistory(long timeAgo)
         {
             if (posHistory == null) return null;
-            long tickPast = timeAgo * RealmManager.TPS / 1000;
+            long tickPast = timeAgo * LogicTicker.TPS / 1000;
             if (tickPast > 255) return null;
             return posHistory[(byte)(posIdx - (byte)tickPast)];
         }

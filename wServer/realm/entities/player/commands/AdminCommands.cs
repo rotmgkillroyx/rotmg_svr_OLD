@@ -16,7 +16,7 @@ namespace wServer.realm.entities.player.commands
         public void Execute(Player player, string[] args)
         {
             int num;
-            if (int.TryParse(args[0], out num)) //multi
+            if (args.Length > 0 && int.TryParse(args[0], out num)) //multi
             {
                 string name = string.Join(" ", args.Skip(1).ToArray());
                 short objType;
@@ -210,6 +210,42 @@ namespace wServer.realm.entities.player.commands
                     Text = "Cannot apply setpiece!"
                 });
             }
+        }
+    }
+
+
+    class DebugCommand : ICommand
+    {
+        public string Command { get { return "debug"; } }
+        public bool RequirePerm { get { return true; } }
+
+        class Locater : Enemy
+        {
+            Player player;
+            public Locater(Player player)
+                : base(0x0d5d)
+            {
+                this.player = player;
+                MovementBehavior = wServer.logic.NullBehavior.Instance;
+                AttackBehavior = wServer.logic.NullBehavior.Instance;
+                ReproduceBehavior = wServer.logic.NullBehavior.Instance;
+                ApplyConditionEffect(new ConditionEffect()
+                {
+                    Effect = ConditionEffectIndex.Invincible,
+                    DurationMS = -1
+                });
+            }
+            public override void Tick(RealmTime time)
+            {
+                Move(player.X, player.Y);
+                UpdateCount++;
+                base.Tick(time);
+            }
+        }
+
+        public void Execute(Player player, string[] args)
+        {
+            player.Owner.EnterWorld(new Locater(player));
         }
     }
 }

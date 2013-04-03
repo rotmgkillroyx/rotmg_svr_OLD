@@ -34,7 +34,7 @@ namespace wServer.realm.entities
         public void Destroy(bool immediate)
         {
             if (!immediate)
-                RealmManager.AddPendingAction(_ => Destroy(true), PendingPriority.Destruction);
+                RealmManager.Logic.AddPendingAction(_ => Destroy(true), PendingPriority.Destruction);
             if (Owner != null)
             {
                 //ProjectileOwner.Projectiles[ProjectileId] = null;
@@ -101,8 +101,8 @@ namespace wServer.realm.entities
                 return;
             }
             long counter = time.thisTickTimes;
-            while (counter > RealmManager.MsPT && TickCore(elapsedTicks - counter, time))
-                counter -= RealmManager.MsPT;
+            while (counter > LogicTicker.MsPT && TickCore(elapsedTicks - counter, time))
+                counter -= LogicTicker.MsPT;
             if (Owner != null)
                 TickCore(elapsedTicks, time);
 

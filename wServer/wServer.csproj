@@ -192,6 +192,7 @@
     <Compile Include="logic\movement\SmoothWandering.cs" />
     <Compile Include="logic\taunt\ChefTaunt.cs" />
     <Compile Include="logic\taunt\SimpleTaunt.cs" />
+    <Compile Include="NetworkHandler.cs" />
     <Compile Include="PacketIds.cs" />
     <Compile Include="realm\entities\Character.cs">
       <SubType>Code</SubType>
@@ -226,6 +227,8 @@
     <Compile Include="realm\entities\StaticObject.cs" />
     <Compile Include="realm\entities\Trap.cs" />
     <Compile Include="realm\entities\Wall.cs" />
+    <Compile Include="realm\LogicTicker.cs" />
+    <Compile Include="realm\NetworkTicker.cs" />
     <Compile Include="realm\setpieces\Building.cs" />
     <Compile Include="realm\setpieces\Castle.cs" />
     <Compile Include="realm\setpieces\CubeGod.cs" />
