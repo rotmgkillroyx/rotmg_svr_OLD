@@ -9,7 +9,7 @@ using wServer.svrPackets;
 
 namespace wServer.realm
 {
-    public class Entity : IBehaviorHost, IProjectileOwner
+    public class Entity : IBehaviorHost, IProjectileOwner, ICollidable<Entity>
     {
         public Entity(short objType)
             : this(objType, true)
@@ -46,6 +46,10 @@ namespace wServer.realm
         public int Id { get; internal set; }
         public float X { get; private set; }
         public float Y { get; private set; }
+
+
+        public CollisionNode<Entity> CollisionNode { get; set; }
+        public CollisionMap<Entity> Parent { get; set; }
         public Entity Move(float x, float y)
         {
             if (Owner != null && !(this is Projectile) &&
@@ -125,8 +129,7 @@ namespace wServer.realm
             if (this is Projectile) return;
             if (interactive && Owner != null)
             {
-                if (BehaviorBase.HasPlayerNearby(this) &&
-                    !HasConditionEffect(ConditionEffects.Stasis))
+                if (!HasConditionEffect(ConditionEffects.Stasis))
                 {
                     MovementBehavior.Tick(this, time);
                     AttackBehavior.Tick(this, time);
@@ -321,6 +324,5 @@ namespace wServer.realm
             tickingEffects = true;
             UpdateCount++;
         }
-
     }
 }

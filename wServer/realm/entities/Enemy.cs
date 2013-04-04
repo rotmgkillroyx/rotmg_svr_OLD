@@ -148,16 +148,10 @@ namespace wServer.realm.entities
         }
 
         float bleeding = 0;
-        bool init = false;
         public override void Tick(RealmTime time)
         {
             if (pos == null)
                 pos = new Position() { X = X, Y = Y };
-            if (!init)
-            {
-                Owner.EnemiesCollision.Insert(this);
-                init = true;
-            }
 
             if (!stat && HasConditionEffect(ConditionEffects.Bleeding))
             {

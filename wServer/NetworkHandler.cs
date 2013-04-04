@@ -176,7 +176,6 @@ namespace wServer
         }
         bool OnPacketReceived(Packet pkt)
         {
-            Console.WriteLine(pkt.ID);
             return parent.ProcessPacket(pkt);
         }
         ConcurrentQueue<Packet> pendingPackets = new ConcurrentQueue<Packet>();

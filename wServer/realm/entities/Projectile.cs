@@ -86,7 +86,7 @@ namespace wServer.realm.entities
         }
 
         HashSet<Entity> hitted = new HashSet<Entity>();
-        SpatialStorage collisionMap;
+        CollisionMap<Entity> collisionMap;
         public override void Tick(RealmTime time)
         {
             if (collisionMap == null)

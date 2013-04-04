@@ -194,6 +194,7 @@
     <Compile Include="logic\taunt\SimpleTaunt.cs" />
     <Compile Include="NetworkHandler.cs" />
     <Compile Include="PacketIds.cs" />
+    <Compile Include="realm\Collision.cs" />
     <Compile Include="realm\entities\Character.cs">
       <SubType>Code</SubType>
     </Compile>

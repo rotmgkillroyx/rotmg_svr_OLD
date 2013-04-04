@@ -25,8 +25,6 @@ namespace wServer.realm
             Projectiles = new ConcurrentDictionary<Tuple<int, byte>, Projectile>();
             StaticObjects = new ConcurrentDictionary<int, StaticObject>();
             Timers = new List<WorldTimer>();
-            EnemiesCollision = new SpatialStorage();
-            PlayersCollision = new SpatialStorage();
             ClientXML = ExtraXML = Empty<string>.Array;
             Map = new Wmap();
             AllowTeleport = true;
@@ -48,8 +46,8 @@ namespace wServer.realm
         public List<WorldTimer> Timers { get; private set; }
         public int Background { get; protected set; }
 
-        public SpatialStorage EnemiesCollision { get; private set; }
-        public SpatialStorage PlayersCollision { get; private set; }
+        public CollisionMap<Entity> EnemiesCollision { get; private set; }
+        public CollisionMap<Entity> PlayersCollision { get; private set; }
         public byte[,] Obstacles { get; private set; }
 
         public bool AllowTeleport { get; protected set; }
@@ -107,6 +105,8 @@ namespace wServer.realm
                     }
 
                 }
+            EnemiesCollision = new CollisionMap<Entity>(0, w, h);
+            PlayersCollision = new CollisionMap<Entity>(1, w, h);
 
             Projectiles.Clear();
             StaticObjects.Clear();
@@ -135,6 +135,7 @@ namespace wServer.realm
                 entity.Id = GetNextEntityId();
                 entity.Init(this);
                 Enemies.TryAdd(entity.Id, entity as Enemy);
+                EnemiesCollision.Insert(entity);
                 if (entity.ObjectDesc.Quest)
                     Quests.TryAdd(entity.Id, entity as Enemy);
             }
@@ -234,11 +235,22 @@ namespace wServer.realm
 
             foreach (var i in Players)
                 i.Value.Tick(time);
-            foreach (var i in Enemies)
-                i.Value.Tick(time);
+
+            if (EnemiesCollision != null)
+            {
+                foreach (var i in EnemiesCollision.GetActiveChunks(PlayersCollision))
+                    i.Tick(time);
+                foreach (var i in StaticObjects.Where(x => x.Value is Decoy))
+                    i.Value.Tick(time);
+            }
+            else
+            {
+                foreach (var i in Enemies)
+                    i.Value.Tick(time);
+                foreach (var i in StaticObjects)
+                    i.Value.Tick(time);
+            }
             foreach (var i in Projectiles)
-                i.Value.Tick(time);
-            foreach (var i in StaticObjects)
                 i.Value.Tick(time);
         }
 
