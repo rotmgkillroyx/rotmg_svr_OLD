@@ -589,7 +589,7 @@ namespace wServer.realm.entities
                 BubbleTime = 0,
                 Stars = -1,
                 Name = "",
-                Text = Name + " died at Level " + Level + ", with " + Fame + " Fame " + " and " + Experience + " Experience " + ", killed by " + killer
+                Text = Name + " died at Level " + Level + ", with " + Fame + " Fame"/* + " and " + Experience + " Experience " + */", killed by " + killer //reportedly crashes server due to long message length
             }, null);
 
             psr.Character.Dead = true;
