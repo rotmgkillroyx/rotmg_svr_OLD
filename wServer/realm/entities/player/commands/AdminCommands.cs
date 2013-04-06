@@ -386,7 +386,6 @@ namespace wServer.realm.entities.player.commands
         }
     }
 
-
      class OryxSay : ICommand
     {
         public string Command { get { return "oryxsay"; } }
@@ -421,6 +420,53 @@ namespace wServer.realm.entities.player.commands
             }
         }
     }
+
+     class ListCommands : ICommand
+     {
+         public string Command { get { return "commands"; } }
+         public bool RequirePerm { get { return true; } }
+
+         public void Execute(Player player, string[] args)
+         {
+             try
+             {
+                     Dictionary<string, ICommand> cmds = new Dictionary<string, ICommand>();
+                             var t = typeof(ICommand);
+                             foreach (var i in t.Assembly.GetTypes())
+                                 if (t.IsAssignableFrom(i) && i != t)
+                                 {
+                                     var instance = (ICommand)Activator.CreateInstance(i);
+                                     cmds.Add(instance.Command, instance);
+                                 }                         
+
+                 StringBuilder sb = new StringBuilder("Commands: ");
+                 var copy = cmds.Values.ToArray();
+                 for (int i = 0; i < copy.Length; i++)
+                 {
+                     if (i != 0) sb.Append(", ");
+                     sb.Append(copy[i].Command);
+                 }
+
+                 player.Client.SendPacket(new TextPacket()
+                 {
+                     BubbleTime = 0,
+                     Stars = -1,
+                     Name = "",
+                     Text = sb.ToString()
+                 });
+             }
+             catch
+             {
+                 player.Client.SendPacket(new TextPacket()
+                 {
+                     BubbleTime = 0,
+                     Stars = -1,
+                     Name = "",
+                     Text = "Cannot say that!"
+                 });
+             }
+         }
+     }
 
 
 }
