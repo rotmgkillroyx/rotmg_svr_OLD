@@ -21,6 +21,8 @@ V	fulmination scepter doesn't slow
 	cube gods/skull shrines need to guarantee one stat increase pot
 	cyclops/red demon chests need a hp/mp pot chanced buff
 	"Your life is an aaffront to Oryx. You will die." - red demon
+	Enemy shots pierce destructible walls, damaging players, but no red damage text shows!
+
 	
 
 
