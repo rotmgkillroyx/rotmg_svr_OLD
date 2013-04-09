@@ -88,7 +88,10 @@ namespace wServer.logic.loot
                     Host.Self.X + (float)((rand.NextDouble() * 2 - 1) * 0.5),
                     Host.Self.Y + (float)((rand.NextDouble() * 2 - 1) * 0.5));
                 container.Size = 80;
-                Host.Self.Owner.EnterWorld(container);
+                if (Host.Self.Owner != null) //was null sometimes
+                {
+                    Host.Self.Owner.EnterWorld(container);
+                }
             }
         }
 

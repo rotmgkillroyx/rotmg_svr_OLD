@@ -145,6 +145,7 @@ namespace wServer.realm
                     Tuple.Create("Rock Bot", 0.05),
                     Tuple.Create("Djinn", 0.09),
                     Tuple.Create("Leviathan", 0.09)
+                    Tuple.Create("Skull God", 0.2)
                 })
             },
         };

@@ -359,9 +359,17 @@ namespace wServer.realm.entities
             World world = entity.WorldInstance;
             if (world == null)
             {
-                switch (entity.ObjectType)
+                switch (entity.ObjectType) //handling default case for not found. Add more as implemented
                 {
+                    case 0x0703: //portal of cowardice
+                        {
+                            if (RealmManager.PlayerWorldMapping.ContainsKey(this.AccountId))  //may not be valid, realm recycled?
+                                world = RealmManager.PlayerWorldMapping[this.AccountId];  //also reconnecting to vault is a little unexpected
+                            else
+                                world = RealmManager.GetWorld(World.NEXUS_ID);
+                        } break;
                     case 0x0712:
+                        world = RealmManager.GetWorld(World.VAULT_ID); break; 
                     case 0x071d:
                         world = RealmManager.GetWorld(World.NEXUS_ID); break;
                     case 0x071c:
@@ -370,9 +378,31 @@ namespace wServer.realm.entities
                         world = RealmManager.GetWorld(World.VAULT_ID); break;
                     case 0x071e:
                         world = RealmManager.AddWorld(new Kitchen()); break;
+                    case 0x071f: //these need to match IDs
+                        //world = RealmManager.GetWorld(World.GauntletMap); break; //this creates a singleton dungeon
+                        world = RealmManager.AddWorld(new GauntletMap()); break; //this allows each dungeon to be unique
+                    default: psr.SendPacket(new TextPacket
+                    {
+                        BubbleTime = 0,
+                        Stars = -1,
+                        Name = "",
+                        Text = "Portal Not Implemented!"
+                    }); break;
+                    //case 1795
+                    /*case 0x0712:
+                        world = RealmManager.GetWorld(World.NEXUS_ID); break;*/
                 }
+                
                 entity.WorldInstance = world;
+            }            
+            
+            //used to match up player to last realm they were in, to return them to it. Sometimes is odd, like from Vault back to Vault...
+            if (RealmManager.PlayerWorldMapping.ContainsKey(this.AccountId))
+            {
+                World tempWorld;
+                RealmManager.PlayerWorldMapping.TryRemove(this.AccountId, out tempWorld);
             }
+            RealmManager.PlayerWorldMapping.TryAdd(this.AccountId, Owner);
             psr.Reconnect(new ReconnectPacket()
             {
                 Host = "",
@@ -385,6 +415,18 @@ namespace wServer.realm.entities
 
         public void Teleport(RealmTime time, TeleportPacket pkt)
         {
+            if (!this.TPCooledDown())
+            {
+                psr.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = "Too soon to teleport again!"
+                });
+                return;
+            }
+            SetTPDisabledPeriod();
             var obj = Owner.GetEntity(pkt.ObjectId);
             if (obj == null) return;
             Move(obj.X, obj.Y);

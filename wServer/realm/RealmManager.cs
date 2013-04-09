@@ -37,6 +37,7 @@ namespace wServer.realm
             Worlds[World.VAULT_ID] = new Vault(true);
             Worlds[World.TEST_ID] = new Test();
             Worlds[World.RAND_REALM] = new RandomRealm();
+            Worlds[World.GAUNTLET] = new GauntletMap();
 
             Monitor = new RealmPortalMonitor(Worlds[World.NEXUS_ID] as Nexus);
 
@@ -48,6 +49,7 @@ namespace wServer.realm
         static int nextWorldId = 0;
         public static readonly ConcurrentDictionary<int, World> Worlds = new ConcurrentDictionary<int, World>();
         public static readonly ConcurrentDictionary<int, ClientProcessor> Clients = new ConcurrentDictionary<int, ClientProcessor>();
+        public static ConcurrentDictionary<int, World> PlayerWorldMapping = new ConcurrentDictionary<int, World>();
 
         public static RealmPortalMonitor Monitor { get; private set; }
 

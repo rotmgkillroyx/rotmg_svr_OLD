@@ -198,7 +198,7 @@ namespace wServer.realm
                         for (int i = -ACTIVE_RADIUS; i <= ACTIVE_RADIUS; i++)
                             for (int j = -ACTIVE_RADIUS; j <= ACTIVE_RADIUS; j++)
                             {
-                                if (x + j < 0 || x + j > cW || y + i < 0 || y + i > cH)
+                                if (x + j < 0 || x + j >= cW || y + i < 0 || y + i >= cH)
                                     continue;
                                 var node = this.chunks[x + j, y + i];
                                 while (node != null)

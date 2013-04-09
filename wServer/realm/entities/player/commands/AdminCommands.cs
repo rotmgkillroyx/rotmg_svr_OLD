@@ -5,6 +5,7 @@ using System.Text;
 using wServer.cliPackets;
 using wServer.svrPackets;
 using wServer.realm.setpieces;
+using wServer.realm.worlds;
 
 namespace wServer.realm.entities.player.commands
 {
@@ -325,21 +326,26 @@ namespace wServer.realm.entities.player.commands
         {
             try
             {
-                World world = RealmManager.GetWorld(World.VAULT_ID); 
-                foreach (var i in player.Owner.Players)
+                World destworld = RealmManager.GetWorld(World.VAULT_ID);
+                foreach (var w in RealmManager.Worlds)
                 {
-                      
-                    if (i.Value.Name.ToLower() == args[0].ToLower().Trim())
-                    {                                          
-                      i.Value.Client.SendPacket(new ReconnectPacket()
-            {
-                Host = "",
-                Port = 2050,
-                GameId = world.Id,
-                Name = world.Name,
-                Key = Empty<byte>.Array,
-            });               
-                    
+                    World world = w.Value;
+                    if (w.Key != 0)
+                    {
+                        foreach (var i in world.Players)
+                        {
+                            if (i.Value.Name.ToLower() == args[0].ToLower().Trim())
+                            {
+                                i.Value.Client.SendPacket(new ReconnectPacket()
+                                      {
+                                          Host = "",
+                                          Port = 2050,
+                                          GameId = destworld.Id,
+                                          Name = destworld.Name,
+                                          Key = Empty<byte>.Array,
+                                      });
+                            }
+                        }
                     }                                                              
                 }
             }
@@ -468,5 +474,173 @@ namespace wServer.realm.entities.player.commands
          }
      }
 
+    class SWhoCommand : ICommand //get all players from all worlds (this may become too large!)
+    {
+        public string Command { get { return "swho"; } }
+        public bool RequirePerm { get { return true; } }
+
+        public void Execute(Player player, string[] args)
+        {
+            StringBuilder sb = new StringBuilder("All conplayers: ");
+
+            foreach (var w in RealmManager.Worlds)
+            {
+                World world = w.Value;
+                if (w.Key != 0)
+                {
+                    var copy = world.Players.Values.ToArray();
+                    if (copy.Length != 0)
+                    {
+                        for (int i = 0; i < copy.Length; i++)
+                        {
+                            sb.Append(copy[i].Name);
+                            sb.Append(", ");
+                        }
+                    }
+                }
+            }
+            string fixedString = sb.ToString().TrimEnd(',', ' '); //clean up trailing ", "s
+
+            player.Client.SendPacket(new TextPacket()
+            {
+                BubbleTime = 0,
+                Stars = -1,
+                Name = "",
+                Text = fixedString
+            });
+        }
+    }
+
+    class Announcement : ICommand
+    {
+        public string Command { get { return "announcement"; } } //msg all players in all worlds
+        public bool RequirePerm { get { return true; } }
+
+        public void Execute(Player player, string[] args)
+        {
+
+            try
+            {
+                string saytext = string.Join(" ", args);
+
+                foreach (var w in RealmManager.Worlds)
+                {
+                    World world = w.Value;
+                    if (w.Key != 0)
+                    {
+                        world.BroadcastPacket(new TextPacket()
+                        {
+                            Name = "#" + "Announcement",
+                            //ObjectId = 0x0932,
+                            ObjectId = 0x00,
+                            Stars = -1,
+                            BubbleTime = 0,
+                            //Recipient = "", //this makes yellow text
+                            Text = saytext,
+                            CleanText = saytext
+                        }, null);
+                    }
+                }          
+
+            }
+            catch
+            {
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = "Cannot say that in announcement!"
+                });
+            }
+        }
+    }
+
+    class RTeleport : ICommand
+    {
+        public string Command { get { return "rteleport"; } }
+        public bool RequirePerm { get { return true; } }
+
+        public void Execute(Player player, string[] args)
+        {
+            try
+            {
+                foreach (var i in player.Owner.Players)
+                {
+                    if (i.Value.Name.ToLower() == args[0].ToLower().Trim())
+                    {
+                        i.Value.Teleport(new RealmTime(), new cliPackets.TeleportPacket()
+                        {
+                            ObjectId = player.Id
+                        });
+                        return;
+                    }
+                }
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = string.Format("Cannot rteleport, {0} not found!", args[0].Trim())
+                });
+            }
+            catch
+            {
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = "Cannot rtp!"
+                });
+            }
+        }
+    }
+
+    class KillCommand : ICommand
+    {
+        public string Command { get { return "kill"; } }
+        public bool RequirePerm { get { return true; } }
+
+        public void Execute(Player player, string[] args)
+        {
+            try
+            {                
+                foreach (var w in RealmManager.Worlds)
+                {
+                    World world = w.Value;
+                    if (w.Key != 0) // 0 is limbo??
+                    {
+                        foreach (var i in world.Players) 
+                        {
+                            //Unnamed becomes a problem: skip them
+                            if (i.Value.Name.ToLower() == args[0].ToLower().Trim() && i.Value.NameChosen) 
+                            {
+                                i.Value.Death("Moderator");                                
+                                return;
+                            }
+                        }
+                    }
+                }
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = string.Format("Cannot /kill, {0} not found!", args[0].Trim())
+                });      
+            }
+            catch
+            {
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = "Cannot kill!"
+                });
+            }
+        }
+    }
 
 }
