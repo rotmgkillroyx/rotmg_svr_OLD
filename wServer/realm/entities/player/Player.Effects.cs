@@ -48,6 +48,12 @@ namespace wServer.realm.entities
                 if (newbieTime < 0) 
                     newbieTime = 0;
             }
+            if (CanTPCooldownTime > 0)
+            {
+                CanTPCooldownTime -= time.thisTickTimes;
+                if (CanTPCooldownTime < 0)
+                    CanTPCooldownTime = 0;
+            }
         }
 
         bool CanHpRegen()
@@ -70,6 +76,11 @@ namespace wServer.realm.entities
         {
             newbieTime = 3000;
         }
+        int CanTPCooldownTime = 0;
+        internal void SetTPDisabledPeriod()
+        {
+            CanTPCooldownTime = 10*1000; // 10 seconds
+        }
 
         public bool IsVisibleToEnemy()
         {
@@ -78,6 +89,12 @@ namespace wServer.realm.entities
             if (HasConditionEffect(ConditionEffects.Invisible))
                 return false;
             if (newbieTime > 0)
+                return false;
+            return true;
+        }
+        public bool TPCooledDown()
+        {
+            if (CanTPCooldownTime > 0)
                 return false;
             return true;
         }

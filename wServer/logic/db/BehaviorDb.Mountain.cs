@@ -85,6 +85,24 @@ namespace wServer.logic
                         ))
                     )
                 ))
+            .Init(0xf22, Behaves("Skull God",
+                    IfNot.Instance(
+                        Chasing.Instance(10, 7, 4, null),
+                        SimpleWandering.Instance(4)
+                    ),
+                    new RunBehaviors(
+                        Cooldown.Instance(800, PredictiveMultiAttack.Instance(25, 10 * (float)Math.PI / 180, 6, 1))
+                    ),
+                    loot: new LootBehavior(LootDef.Empty,
+                        Tuple.Create(100, new LootDef(0, 3, 0, 8,
+                            Tuple.Create(0.001, (ILoot)new ItemLoot("Trident of Alexander")),
+                            Tuple.Create(PotProbability, (ILoot)new StatPotionLoot(StatPotion.Life)),
+                            Tuple.Create(PotProbability, (ILoot)new StatPotionLoot(StatPotion.Mana)),
+                            Tuple.Create(PotProbability, (ILoot)new StatPotionLoot(StatPotion.Vit)),
+                            Tuple.Create(PotProbability, (ILoot)new StatPotionLoot(StatPotion.Dex))
+                        ))
+                    )
+                ))
             .Init(0x655, Behaves("Ent God",
                     IfNot.Instance(
                         Chasing.Instance(10, 7, 4, null),

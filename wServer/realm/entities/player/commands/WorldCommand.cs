@@ -116,4 +116,152 @@ namespace wServer.realm.entities.player.commands
             }
         }
     }
+    /// <summary>
+    /// This introduces a subtle bug, since the client UI is not notified when a /teleport is typed, it's cooldown does not reset.
+    /// This leads to the unfortunate situation where the cooldown has been not been reached, but the UI doesn't know. The graphical TP will fail
+    /// and cause it's timer to reset. NB: typing /teleport will workaround this timeout issue.
+    /// </summary>
+    class TeleportCommand : ICommand
+    {
+        public string Command { get { return "teleport"; } }
+        public bool RequirePerm { get { return false; } }
+
+        public void Execute(Player player, string[] args) 
+        {
+            try
+            {
+                if (player.Name.ToLower() == args[0].ToLower())
+                {
+                    player.Client.SendPacket(new TextPacket()
+                    {
+                        BubbleTime = 0,
+                        Stars = -1,
+                        Name = "",
+                        Text = "You are already at yourself, and always will be!"
+                    });
+                    return;
+                }
+
+                foreach (var i in player.Owner.Players) 
+                {
+                    if (i.Value.Name.ToLower() == args[0].ToLower().Trim())
+                    {
+                        player.Teleport(new RealmTime(), new cliPackets.TeleportPacket()
+                        {
+                            ObjectId = i.Value.Id
+                        });
+                        return;
+                    }                                           
+                }
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = string.Format("Cannot teleport, {0} not found!", args[0].Trim())
+                });
+            }
+            catch
+            {
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = "Cannot tp!"
+                });
+            }
+        }
+
+
+    }
+
+    class TellCommand : ICommand
+    {
+        public string Command { get { return "tell"; } }
+        public bool RequirePerm { get { return false; } }
+
+        public void Execute(Player player, string[] args)
+        {
+            try
+            {
+                if (!(player.NameChosen))
+                {
+                    player.Client.SendPacket(new TextPacket()
+                    {
+                        BubbleTime = 0,
+                        Stars = -1,
+                        Name = "",
+                        Text = string.Format("Choose a name!")
+                    });
+                    return;
+                }
+
+                string playername = args[0].Trim();
+
+                if (player.Name.ToLower() == playername.ToLower())
+                {
+                    player.Client.SendPacket(new TextPacket()
+                    {
+                        BubbleTime = 0,
+                        Stars = -1,
+                        Name = "",
+                        Text = string.Format("Quit telling yourself!")
+                    });
+                    return;
+                }
+                
+                string saytext = string.Join(" ", args, 1, args.Length-1);
+
+                foreach (var w in RealmManager.Worlds)
+                {
+                    World world = w.Value;
+                    if (w.Key != 0) // 0 is limbo??
+                    {
+                        foreach (var i in world.Players) 
+                        {
+                            if (i.Value.Name.ToLower() == args[0].ToLower().Trim() && i.Value.NameChosen)
+                            {
+                                player.Client.SendPacket(new TextPacket() //echo to self
+                                {
+                                    BubbleTime = 10,
+                                    Stars = player.Stars,          
+                                    Name = player.Name,
+                                    Recipient = i.Value.Name,
+                                    Text = saytext
+                                });
+
+                                i.Value.Client.SendPacket(new TextPacket() //echo to /tell player
+                                {                                    
+                                    BubbleTime = 10,
+                                    Stars = player.Stars,
+                                    Recipient = i.Value.Name,
+                                    Name = player.Name,
+                                    Text = saytext
+                                });
+                                return;
+                            }
+                        }
+                    }
+                }                       
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = string.Format("Cannot /tell, {0} not found!", args[0].Trim())
+                });
+            }
+            catch
+            {
+                player.Client.SendPacket(new TextPacket()
+                {
+                    BubbleTime = 0,
+                    Stars = -1,
+                    Name = "",
+                    Text = "Cannot tell!"
+                });
+            }
+        }
+    }
 }

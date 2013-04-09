@@ -17,6 +17,7 @@ public class XmlDatas
         TileDescs = new Dictionary<short, TileDesc>();
         ItemDescs = new Dictionary<short, Item>();
         ObjectDescs = new Dictionary<short, ObjectDesc>();
+        PortalDescs = new Dictionary<short, PortalDesc>();
 
         Stream stream;
         for (int i = 0; i < XML_COUNT; i++)
@@ -61,6 +62,19 @@ public class XmlDatas
             else if (cls == "Character" || cls == "GameObject" || cls == "Wall" ||
                 cls == "ConnectedWall" || cls == "CaveWall")
                 ObjectDescs[type] = new ObjectDesc(elem);
+            else if (cls == "Portal")
+            {
+                try
+                {
+                    PortalDescs[type] = new PortalDesc(elem);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error for portal: " + type + " id: " + id); 
+                        /*3392,1792,1795,1796,1805,1806,1810,1825 -- no location, assume nexus?* 
+    *  Tomb Portal of Cowardice,  Dungeon Portal,  Portal of Cowardice,  Realm Portal,  Glowing Portal of Cowardice,  Glowing Realm Portal,  Nexus Portal,  Locked Wine Cellar Portal*/
+                }
+            }
         }
     }
 
@@ -71,6 +85,8 @@ public class XmlDatas
     public static readonly Dictionary<short, TileDesc> TileDescs;
     public static readonly Dictionary<short, Item> ItemDescs;
     public static readonly Dictionary<short, ObjectDesc> ObjectDescs;
+    public static readonly Dictionary<short, PortalDesc> PortalDescs;
+
 
     public static readonly string AdditionXml;
 }

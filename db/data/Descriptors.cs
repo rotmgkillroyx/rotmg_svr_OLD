@@ -258,6 +258,30 @@ public class ActivateEffect
             LockedName = elem.Attribute("lockedName").Value;
     }
 }
+public class PortalDesc
+{
+	public short ObjectType { get; private set; }
+	public string ObjectId { get; private set; }
+	public string DungeonName { get; private set; }
+    public int TimeoutTime { get; private set; }
+    public bool NexusPortal { get; private set; }
+
+	public PortalDesc(XElement elem)
+	{
+		XElement n;
+		ObjectType = (short)Utils.FromString(elem.Attribute("type").Value);
+		ObjectId = elem.Attribute("id").Value;
+        if ((n = elem.Element("NexusPortal")) != null) //<NexusPortal/>
+        {
+            NexusPortal = true;
+        }
+        if ((n = elem.Element("DungeonName")) != null) //<NexusPortal/>
+        {
+            DungeonName = elem.Element("DungeonName").Value;
+        }		
+        TimeoutTime = 30;        
+	}
+}
 public class Item
 {
     public short ObjectType { get; private set; }
