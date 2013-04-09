@@ -631,7 +631,7 @@ namespace wServer.realm.entities
                 BubbleTime = 0,
                 Stars = -1,
                 Name = "",                
-                Text = Name + " died at Level " + Level + ", with " + Fame + " Fame " +/* " and " + Experience + " Experience " + */", killed by " + killer //removed XP as max packet length reached!
+                Text = Name + " died at Level " + Level + ", with " + Fame + " Fame" +/* " and " + Experience + " Experience " + */", killed by " + killer //removed XP as max packet length reached!
             }, null);
 
             psr.Character.Dead = true;
