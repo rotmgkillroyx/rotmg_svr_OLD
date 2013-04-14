@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using System.Xml;
 using System.Xml.Linq;
+using System.Globalization;
 
 [Flags]
 public enum ConditionEffects
@@ -70,17 +71,20 @@ public enum ConditionEffectIndex
 }
 public class ConditionEffect
 {
+
     public ConditionEffectIndex Effect { get; set; }
     public int DurationMS { get; set; }
     public float Range { get; set; }
     public ConditionEffect() { }
     public ConditionEffect(XElement elem)
     {
+        CultureInfo ci = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        ci.NumberFormat.CurrencyDecimalSeparator = ".";
         Effect = (ConditionEffectIndex)Enum.Parse(typeof(ConditionEffectIndex), elem.Value.Replace(" ", ""));
         if (elem.Attribute("duration") != null)
-            DurationMS = (int)(float.Parse(elem.Attribute("duration").Value) * 1000);
+            DurationMS = (int)(float.Parse(elem.Attribute("duration").Value, NumberStyles.Any, ci) * 1000);
         if (elem.Attribute("range") != null)
-            Range = float.Parse(elem.Attribute("range").Value);
+            Range = float.Parse(elem.Attribute("range").Value, NumberStyles.Any, ci);
     }
 }
 
@@ -110,12 +114,15 @@ public class ProjectileDesc
 
     public ProjectileDesc(XElement elem)
     {
+        CultureInfo ci = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        ci.NumberFormat.CurrencyDecimalSeparator = ".";
+
         XElement n;
         if (elem.Attribute("id") != null)
             BulletType = Utils.FromString(elem.Attribute("id").Value);
         ObjectId = elem.Element("ObjectId").Value;
         LifetimeMS = Utils.FromString(elem.Element("LifetimeMS").Value);
-        Speed = float.Parse(elem.Element("Speed").Value);
+        Speed = float.Parse(elem.Element("Speed").Value, NumberStyles.Any, ci);
         if ((n = elem.Element("Size")) != null)
             Size = Utils.FromString(n.Value);
 
@@ -143,17 +150,17 @@ public class ProjectileDesc
 
         n = elem.Element("Amplitude");
         if (n != null)
-            Amplitude = float.Parse(n.Value);
+            Amplitude = float.Parse(n.Value, NumberStyles.Any, ci);
         else
             Amplitude = 0;
         n = elem.Element("Frequency");
         if (n != null)
-            Frequency = float.Parse(n.Value);
+            Frequency = float.Parse(n.Value, NumberStyles.Any, ci);
         else
             Frequency = 1;
         n = elem.Element("Magnitude");
         if (n != null)
-            Magnitude = float.Parse(n.Value);
+            Magnitude = float.Parse(n.Value, NumberStyles.Any, ci);
         else
             Magnitude = 3;
     }
@@ -210,6 +217,9 @@ public class ActivateEffect
 
     public ActivateEffect(XElement elem)
     {
+        //Prevent issues with different decimal separator over countries
+		CultureInfo ci = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        ci.NumberFormat.CurrencyDecimalSeparator = ".";
         Effect = (ActivateEffects)Enum.Parse(typeof(ActivateEffects), elem.Value);
         if (elem.Attribute("stat") != null)
             Stats = Utils.FromString(elem.Attribute("stat").Value);
@@ -218,9 +228,9 @@ public class ActivateEffect
             Amount = Utils.FromString(elem.Attribute("amount").Value);
 
         if (elem.Attribute("range") != null)
-            Range = float.Parse(elem.Attribute("range").Value);
+            Range = float.Parse(elem.Attribute("range").Value, NumberStyles.Any, ci);
         if (elem.Attribute("duration") != null)
-            DurationMS = (int)(float.Parse(elem.Attribute("duration").Value) * 1000);
+            DurationMS = (int)(float.Parse(elem.Attribute("duration").Value, NumberStyles.Any, ci) * 1000);
 
         if (elem.Attribute("effect") != null)
             ConditionEffect = (ConditionEffectIndex)Enum.Parse(typeof(ConditionEffectIndex), elem.Attribute("effect").Value);
@@ -228,13 +238,13 @@ public class ActivateEffect
             ConditionEffect = (ConditionEffectIndex)Enum.Parse(typeof(ConditionEffectIndex), elem.Attribute("condEffect").Value);
 
         if (elem.Attribute("condDuration") != null)
-            EffectDuration = float.Parse(elem.Attribute("condDuration").Value);
+            EffectDuration = float.Parse(elem.Attribute("condDuration").Value, NumberStyles.Any, ci);
 
         if (elem.Attribute("maxDistance") != null)
             MaximumDistance = Utils.FromString(elem.Attribute("maxDistance").Value);
 
         if (elem.Attribute("radius") != null)
-            Radius = float.Parse(elem.Attribute("radius").Value);
+            Radius = float.Parse(elem.Attribute("radius").Value, NumberStyles.Any, ci);
 
         if (elem.Attribute("totalDamage") != null)
             TotalDamage = Utils.FromString(elem.Attribute("totalDamage").Value);
@@ -311,6 +321,8 @@ public class Item
 
     public Item(XElement elem)
     {
+        CultureInfo ci = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        ci.NumberFormat.CurrencyDecimalSeparator = ".";
         XElement n;
         ObjectType = (short)Utils.FromString(elem.Attribute(XName.Get("type")).Value);
         ObjectId = elem.Attribute(XName.Get("id")).Value;
@@ -321,7 +333,7 @@ public class Item
             Tier = -1;
         Description = elem.Element("Description").Value;
         if ((n = elem.Element("RateOfFire")) != null)
-            RateOfFire = float.Parse(n.Value);
+            RateOfFire = float.Parse(n.Value, NumberStyles.Any, ci);
         else
             RateOfFire = 1;
         Usable = elem.Element("Usable") != null;
@@ -361,7 +373,7 @@ public class Item
             SuccessorId = null;
         Soulbound = elem.Element("Soulbound") != null;
         if ((n = elem.Element("Cooldown")) != null)
-            Cooldown = float.Parse(n.Value);
+            Cooldown = float.Parse(n.Value, NumberStyles.Any, ci);
         else
             Cooldown = 0;
         Resurrects = elem.Element("Resurrects") != null;
@@ -438,9 +450,13 @@ public class ObjectDesc
     public int? PerRealmMax { get; private set; }
     public float? ExpMultiplier { get; private set; }    //Exp gained = level total / 10 * multi
 
+  
     public ObjectDesc(XElement elem)
     {
         XElement n;
+        CultureInfo ci = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        ci.NumberFormat.CurrencyDecimalSeparator = ".";
+
         ObjectType = (short)Utils.FromString(elem.Attribute("type").Value);
         ObjectId = elem.Attribute("id").Value;
         Class = elem.Element("Class").Value;
@@ -498,7 +514,7 @@ public class ObjectDesc
         if ((n = elem.Element("Terrain")) != null)
             Terrain = n.Value;
         if ((n = elem.Element("SpawnProbability")) != null)
-            SpawnProbability = float.Parse(n.Value);
+            SpawnProbability = float.Parse(n.Value, NumberStyles.Any, ci);
         if ((n = elem.Element("Spawn")) != null)
             Spawn = new SpawnCount(n);
 
@@ -519,7 +535,9 @@ public class ObjectDesc
         else
             PerRealmMax = null;
         if ((n = elem.Element("XpMult")) != null)
-            ExpMultiplier = float.Parse(n.Value);
+        {
+            ExpMultiplier = float.Parse(n.Value, NumberStyles.Any, ci);
+        }
         else
             ExpMultiplier = null;
     }
@@ -540,6 +558,8 @@ public class TileDesc
 
     public TileDesc(XElement elem)
     {
+        CultureInfo ci = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+        ci.NumberFormat.CurrencyDecimalSeparator = ".";
         XElement n;
         ObjectType = (short)Utils.FromString(elem.Attribute("type").Value);
         ObjectId = elem.Attribute("id").Value;
@@ -555,15 +575,15 @@ public class TileDesc
             Damaging = true;
         }
         if ((n = elem.Element("Speed")) != null)
-            Speed = float.Parse(n.Value);
+            Speed = float.Parse(n.Value, NumberStyles.Any, ci);
         Push = elem.Element("Push") != null;
         if (Push)
         {
             var anim = elem.Element("Animate");
             if (anim.Attribute("dx") != null)
-                PushX = float.Parse(anim.Attribute("dx").Value);
+                PushX = float.Parse(anim.Attribute("dx").Value, NumberStyles.Any, ci);
             if (elem.Attribute("dy") != null)
-                PushY = float.Parse(anim.Attribute("dy").Value);
+                PushY = float.Parse(anim.Attribute("dy").Value, NumberStyles.Any, ci);
         }
     }
 }
